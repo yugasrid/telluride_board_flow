@@ -74,8 +74,15 @@ trace_package_design() {
 }
 
 build_mladf_runner() {
-    echo "[INFO] Fetching latest aie_runtime..."
-    bash "$SCRIPT_DIR/fetch_aie_runtime.sh"
+   # echo "[INFO] Fetching latest aie_runtime..."
+   # bash "$SCRIPT_DIR/fetch_aie_runtime.sh"
+    if [[ -x "$AIE_RUNTIME" ]]; then
+        echo "[INFO] Using existing aie_runtime from utils/ (skipping artifactory download)."
+    else
+        echo "[ERROR] aie_runtime not found or not executable at $AIE_RUNTIME"
+        echo "[INFO] Place the aie_runtime binary in utils/ or restore the artifactory fetch."
+        exit 1
+    fi
 }
 
 copy_runtime_files() {
