@@ -1,0 +1,144 @@
+#| Processed user TQL: /proj/testcases/xtc/HEAD/auto/tql/vaiml/ve2_bf16_cnn_backbone_o2.tql
+# This will filter the tests to those which can support the vek385_vaiml platform and hw test mode
+FROM /wrk/xcohdnobkup2/yugasrid/telluride_board_flow
+TEMPLATE
+    # Environmental variables setup:
+    env_vars.GITHUB_COMMON_REPO = '/proj/fisdata2/scout_testcases/VITIS_DSV_GITHUB_NEXT/vitis_examples',
+    env_vars.XILINX_FLEXML = '/proj/aiebuilds/ryzen-ai/ryzen-ai-TA/main/ryzenai_main_daily_latest/lnx64/',
+    env_vars.XILINX_FLEXML_WIN = '/proj/aiebuilds/ryzen-ai/ryzen-ai-TA/main/ryzenai_main_daily_latest/winrt64/rai-1.7.0/',
+    env_vars.LM_LICENSE_FILE = '1757@xsjlicsrvip',
+    env_vars.ADD_TARGET_TO_CFG = 'True',
+    env_vars.XLNX_ENABLE_CACHE = '0',
+
+    # Cpu cores, memory and level defaults setup for test mode hw:
+    newlevel = True,
+    test_state.state ?= 'STAGING',
+    tasks.vaiml.level ?= 8,
+    tasks.vaiml.memory ?= 16,
+    tasks.vaiml.cpu_cores ?= 1,
+    tasks.board.level ?= 8,
+    tasks.board.memory ?= 10,
+    tasks.board.cpu_cores ?= 1,
+
+    # Test-mode related setup:
+    user.test_mode = 'hw',
+    test_name = concat(test_name,'-', user.test_mode),
+
+    # Part setup:
+    user.part ?= 'NA',
+
+    # Platform setup:
+    user.platform = 'vek385_vaiml',
+    env_vars.platform_path = '/proj/testcases/xtc/PROD/2026.1/tc/open/flexml/common/vaiml_platforms',
+    env_vars.SYSROOT = '/proj/xbuilds/2026.1_daily_latest/internal_platforms/sw/versal/xilinx-versal/sysroots/aarch64-xilinx-linux',
+    env_vars.EDGE_COMMON_SW = '/build/embedded/XRT_EMBEDDED/2026.1/versal/2026.1_276/packages/output/internal_platforms/sw/versal/xilinx-versal-common-v2026.1',
+
+    # Disabling board check for embedded run:
+    user.board_check = 0,
+
+    #| Update test_name with platform name:
+    test_name = concat(test_name,'-', user.platform),
+
+    # LSF resource setup:
+    tasks.vaiml.select_resource = "(hname == 'xcowasp0193' || hname == 'xcowasp0191' || hname == 'xcowasp0190' || hname == 'xcowasp0162' || hname == 'xcowasp0159' || hname == 'xcowasp0158' || hname == 'xcowasp0157' || hname == 'xcowasp0156' || hname == 'xcowasp0155' || hname == 'xcowasp0154' || hname == 'xcowasp0153' || hname == 'xcowasp0152' || hname == 'xcowasp0151' || hname == 'xcowasp0150' || hname == 'xcowasp0068' || hname == 'xcowasp0050' || hname == 'xcowasp0029')",
+    tasks.board.select_resource = "(ostype == ubuntu2204) && dsa_cfg == 'vek385-a_t50'",
+
+    # Board farm dsa_cfg:
+    user.board_farm_config = "vek385-a_t50",
+
+    # Setting task CPU architecture, platforms and updating test name:
+    tasks.vaiml.task_platform = 'lnx64',
+    tasks.board.task_platform = 'lnx64',
+    tasks.board.independent_retry = 1,
+    user.xtc.sw_tool = 'vitis',
+
+    # Adding user data 
+        #| Make targets for all tests:
+        user {
+          allowed_test_modes = ['aiesim', 'hw'],
+          custom_makefile = 1,
+          enable_xrt = 0,
+          #| Make target for flexml task:
+          make.vaiml.target.aiesim = 'vaiml_flow ',
+          
+          #| Make target for board task:
+          make.aie.target.all = 'vaiml_ort_ve2_qemu',
+          make.aie.pre_cmd = 'ls',
+          make.aie.post_cmd = 'cd ../',
+          make.aie.options = ["DEVICE=xc2ve3858-ssva2112-1LP-i-S BF16_SELECT=True OPTIMIZE_LEVEL=2 OUTPUT_DIR=vaiml_par_0"],
+          #| Make target for flexml task:
+          make.vaiml.pre_cmd =  'source ./utils/make_pre.sh',
+          make.vaiml.target.aiesim = 'all',
+          make.vaiml.target.all = 'all',
+          make.vaiml.options += ["OPTIMIZE_LEVEL=2 DEVICE=ve2 VISUALIZATION=True ANALYZER_PROFILING=True UNLIMIT_STACKSIZE=1"],
+          
+          #| Make target for board task:
+          make.board.target = 'board_run',
+          make.board.options += [" VISUALIZATION=True ANALYZER_PROFILING=True ONNX_PROFILING=True TEST_ONNXPERF=1"],
+          board_check = 0,
+        },
+        env_vars {
+          BF16_SELECT = 'True',
+          SCRIPT_PATH = '/proj/rdi/aiml_regr/ghe_repos/AIModelTesting/main/',
+          MLLIB_ROOT = '/wrk/xcohdnobkup7/harsallu/sept/sept25_dmha/mllib',
+          XRT_HACK_UNSECURE_LOADING_XCLBIN = 1
+        },
+        #| Flexml Task settings
+        tasks.vaiml.level = 10,
+        tasks.vaiml.memory = 32,
+    tasks.vaiml.select_resource = "(hname == 'xcowasp0193' || hname == 'xcowasp0191' || hname == 'xcowasp0190' || hname == 'xcowasp0162' || hname == 'xcowasp0159' || hname == 'xcowasp0158' || hname == 'xcowasp0157' || hname == 'xcowasp0156' || hname == 'xcowasp0155' || hname == 'xcowasp0154' || hname == 'xcowasp0153' || hname == 'xcowasp0152' || hname == 'xcowasp0151' || hname == 'xcowasp0150' || hname == 'xcowasp0068' || hname == 'xcowasp0050' || hname == 'xcowasp0029')",
+        #| AIE Task settings
+        tasks.aie.disabled = 0,
+        tasks.aie.level = 8,
+        tasks.aie.memory = 25,
+        #| Target IPU PHx-Linux board
+        tasks.board.disabled = 0,
+        tasks.board.level = 10,
+        tasks.board.memory = 16,
+        #tasks.vaiml.job_type = 'sdaccel_hw',
+        #tasks.vaiml.cpu_cores = 1,i
+        #tasks.board.cpu_cores = 6,
+        #tasks.board.task_platform = 'win64',
+        #tasks.board.lsf-os-override = "true",
+        tasks.board.select_resource  = "(ostype == rhelws79 || ostype == rhelws85 || ostype == rhelws86 || ostype == rhelws87 || ostype == almaws87 || ostype == rhelws88 || ostype == rhelws89 || ostype == rhelws810 || ostype == rhelws90 || ostype == rhelws91 || ostype == almaws91 || ostype == rhelws92 || ostype == rhelws93 || ostype == centosws79 || ostype == ubuntu20042 || ostype == ubuntu20043 || ostype == ubuntu20044 || ostype == ubuntu20045 || ostype == ubuntu20046 || ostype == ubuntu2204 || ostype == ubuntu22044 || ostype == ubuntu2204 || ostype == ubuntu220441 || ostype == ubuntu2204 || ostype == ubuntu220442 || ostype == ubuntu2204 || ostype == ubuntu220443) && (dsa_cfg == 'vek385-a_t50')",
+           
+
+    # Added Template data 
+     < /proj/testcases/xtc/HEAD/auto/templates/sdx/sdaccel/flexml/template.tql,
+
+    # Schedule optimization defaults:
+    user.optimization.suite_base = "monday tuesday wednesday thursday friday saturday sunday",
+    user.optimization.test_base = "monday tuesday wednesday thursday friday saturday sunday",
+
+    # LUT path setup:
+    user.lut_path = '/wrk/xcohdnobkup2/yugasrid/VE2_BF16_CNN_BACKBONE_O2.json'
+MD_LOOKUP '${user.lut_path}'
+DELETE tasks.aie
+AS VEK385_VAIML_flexml
+;
+
+
+#| Here the extracted query goes from the command line: 
+APPLY /VEK385_VAIML/ MODIFY user.make.vaiml.pre_cmd = 'source ./utils/make_pre.sh ve2'; 
+APPLY /VEK385_VAIML/ MODIFY user.make.board.options += [' RELEASE=2026.1 ']; 
+
+#| External file data from rdi options
+GLOBAL APPLY * MODIFY user.xocc_common_opts +=' --remote_ip_cache /proj/global_ipcache/vitis/2026.1/2026.1_latest  --xp param:compiler.enablePerformanceTrace=true --log_dir xocc_log --report_dir reports ', env_vars.SDA_SKIP_KERNEL_DEBUG='true' ;
+
+# Apply global filtering based on test_mode and/or platform:
+APPLY * WHERE user.platform =~ user.allowed_platforms AND (NOT user.platform =~ user.excl_platforms) AND user.test_mode in user.allowed_test_modes;
+
+# Apply global filtering based on test_base schedule:
+APPLY * WHERE user.optimization.test_base =~ /tuesday/ OR user.optimization.test_base =~ /Tuesday/ OR user.optimization.test_base =~ /TUESDAY/;
+
+# Tests with test_state.state == WAIVING to have lower LSF priority:
+APPLY * MODIFY IF test_state.state == 'WAIVING' { tasks.vaiml.job_exec_priority = 'low' };
+
+APPLY * MODIFY IF test_state.state == 'WAIVING' { tasks.board.job_exec_priority = 'low' };
+
+# Adding extra metadata to each testcase for debugging purposes:
+APPLY *
+MODIFY
+    user.rsh_debug_data.csr_cmd = "/proj/testcases/xtc/HEAD/auto/scripts/createSpriteRun/createSpriteRun.sh --flexml --spec /proj/testcases/xtc/HEAD/auto/ymls/config/VAI_RAI_1_6.yml --day tuesday --tql-repo /proj/testcases/xtc/HEAD/auto/tql/vaiml --repo /proj/testcases/xtc/HEAD --output /wrk/swtref/dtsd/RAI_1.6/CSR/vai_2026.1_regression/20250916_041925",
+    user.rsh_debug_data.csr_log = "/wrk/swtref/dtsd/RAI_1.6/CSR/vai_2026._regression/20250916_041925/csr_log_20250916_041900.log",
+;

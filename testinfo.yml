@@ -1,0 +1,18 @@
+description: Telluride Flow
+level: 5
+memory: 16
+newlevel: true
+owner: yugasrid
+products: all
+tasks:
+  board:
+    level: 4
+    memory: 64
+  vaiml:
+    level: 10
+    memory: 20
+user:
+  labels:
+    test_type:
+    - regression
+  name: DMHA

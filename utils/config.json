@@ -1,0 +1,20 @@
+{
+    "sessions": {
+        "session0": {
+            "xclbin_file": "design.xclbin",
+            "configs": {
+                "config0": {
+                    "num_runs": 2,
+                    "external_buffers_id": "external_buffer_id.json",
+                    "elf_bin_file": "ctrl.elf",
+                    "data_source": {
+                        "coalesed_inputs": "data/ifm32.bin",
+                        "coalesed_weights": "data/wts32.bin",
+                        "coalesed_outputs": "data/ofm32_ref.bin"
+                    },
+                    "output_buffer": "coalesed_outputs"
+                }
+            }
+        }
+    }
+}
